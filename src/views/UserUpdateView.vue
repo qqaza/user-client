@@ -77,64 +77,72 @@ export default{
         this.getUserInfo(searchNo);
     },
     methods : {
-        goToUpdate(){
-            if(!this.validation()) return;
+        async getUserInfo(userId){
+           let  result = await axios.get('/api/users/' + userId)
+                                         .catch(err => console.log(err));
+            let info = result.data;
+            this.userInfo = info;
+       },
+       updateInfo(){
+        // 유효성 체크
+        if(!this.validation()) return;
 
-            let data = this.getSendData();
+        //2) ajax
+        //2-1) 실제 보낼 데이터 선별
+        let data = this.getSendData();
 
-            axios
-            .post('/api/users', data)
-            .then(result => {
-                //3)결과 처리
-                let user_no = result.data.updateId;
-                if(user_no ==0){
-                    alert(`등록되지 않았습니다.\n메세지를 확인해주세요.\n${result.data.message}`)
-                }else{
-                    alert(`정상적으로 등록되었습니다.`);
-                    this.userInfo.user_no = user_no;
-                }
-            })
-            .catch(err => console.log(err));
-        },
-        validation(){
-            if(this.userInfo.user_id == ""){
-                alert('아이디가 수정되지 않았습니다.');
-                return false;
+        //2-2) axios  이용해서 ajax
+        axios
+        .put('/api/users/' + this.userInfo.user_id, data)
+        .then(result => {
+            let user_no = result.data.affectedRows;
+            if(user_no == 0){
+                alert(`수정되지 않았습니다.\n메세지를 확인해주세요.\n${result.data.message}`);
+            }else{
+                alert(`정상적으로 수정되었습니다.`);
+                this.$router.push({ path : '/userInfo', query : {'userId' : this.userInfo.user_id}});
             }
-            if(this.userInfo.user_pwd == ""){
-                alert('비밀번호가 수정되지 않았습니다.');
-                return false;
-            }
-            if(this.userInfo.user_name == ""){
-                alert('이름이 수정되지 않았습니다.');
-                return false;
-            }
-            return true;
-        },
-        getSendData(){
-            let obj = this.userInfo;
-             let delData = ["user_no"];
-             let newObj = {};
-
-             let isTargeted = null;    
-             for( let field in obj ){ 
-                  isTargeted = false;
-                 for(let target of delData){
-                    if(field == target) {
-                    isTargeted = true;
-                         break;
-                     }            
-                 }
-                 if(!isTargeted){
+        })
+        .catch(err => console.log(err));
+       },
+       validation(){
+        if(this.userInfo.user_id == ''){
+            alert('아이디가 입력되지 않았습니다.');
+            return false;
+        }
+        if(this.userInfo.user_pwd == '') {
+        alert('비밀번호가 입력되지 않았습니다.');
+        return false;
+      }
+      if(this.userInfo.user_name == '') {
+        alert('이름이 입력되지 않았습니다.');
+        return false;
+      }
+      return true;
+    },
+    getSendData() {
+      let obj = this.userInfo;
+      let delData = ["user_no", "user_id"];
+      let newObj = {};
+      let isTargeted = null;
+      for(let field in obj){
+          isTargeted = false;
+          for(let target of delData){
+              if(field == target){
+                isTargeted = true;
+                break;
+              }
+          }
+          if(!isTargeted){
             newObj[field] = obj[field];
-        }
-        }
-        let sendData = {
+          }
+      }
+      let newData = { 
         "param" : newObj
-    }
-    return sendData;
-        }
-
+      }
+      return newData;
+    
+       }
     }
 }
 
