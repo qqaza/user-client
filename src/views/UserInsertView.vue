@@ -78,7 +78,18 @@ export default {
       }
     }
   },
+  created() {  //기본세팅을 할때도 사용가능.
+    this.userInfo.join_date = this.getToday();
+  },
   methods : {
+    //날짜를 오늘날짜로 하는것.
+    getToday(){
+      let date = new Date();
+      let year = date.getFullYear();
+      let month = ('0' + (date.getMonth()+1)).slice(-2);
+      let day = ('0' + date.getDate()).slice(-2);
+      return `${year}-${month}-${day}`;
+    },
     insertInfo() {
       // 1) 유효성 체크
       if(!this.validation()) return;
